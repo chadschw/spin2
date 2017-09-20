@@ -64,6 +64,10 @@ class App extends WebApp {
             //initVel = RandomNumber.between(0.9, 1.1);
         }
 
+        setInterval(() => {
+            eles.forEach(e => e.tick());
+        }, 16);
+
         this.addChild(new veil(eles));
         let velocity = new Text();
         let faster = new ButtonEle("faster", () => {});

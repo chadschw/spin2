@@ -20,8 +20,6 @@ export class SpinEle extends DivEle {
         this.addChild(new ImgEle(imgPath, (i: ImgEle) => {}));
 
         this.angularVelocity = initialVelocity;
-
-        this.timerHandle = setInterval(() => this.tick(), this.sleepIntervalMs);
     }
 
     tick() {

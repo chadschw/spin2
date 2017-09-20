@@ -60,11 +60,57 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Ele = /** @class */ (function () {
+    function Ele() {
+        this.children = [];
+    }
+    Object.defineProperty(Ele.prototype, "style", {
+        get: function () { return this.target.style; },
+        enumerable: true,
+        configurable: true
+    });
+    Ele.prototype.addChild = function (child) {
+        this.children.push(child);
+        this.target.appendChild(child.target);
+    };
+    // Add a child that isn't in the children list and won't get unloaded.
+    Ele.prototype.addUntrackedChild = function (child) {
+        this.target.appendChild(child.target);
+    };
+    Ele.prototype.addChildren = function (children) {
+        var _this = this;
+        children.forEach(function (child) { return _this.addChild(child); });
+    };
+    Ele.prototype.removeChild = function (child) {
+        this.target.removeChild(child.target);
+        this.children.splice(this.children.indexOf(child), 1);
+        child._unload();
+    };
+    Ele.prototype._unload = function () {
+        this.children.forEach(function (child) { return child.unload; });
+        this.children = [];
+        this.unload();
+    };
+    // Derived classes override this if you need to cancel any timers
+    Ele.prototype.unload = function () {
+    };
+    return Ele;
+}());
+exports.Ele = Ele;
+
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -80,11 +126,41 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var web_app_1 = __webpack_require__(1);
-var spin_ele_1 = __webpack_require__(2);
+var ele_1 = __webpack_require__(0);
+var DivEle = /** @class */ (function (_super) {
+    __extends(DivEle, _super);
+    function DivEle() {
+        var _this = _super.call(this) || this;
+        _this.target = document.createElement("div");
+        return _this;
+    }
+    return DivEle;
+}(ele_1.Ele));
+exports.DivEle = DivEle;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var web_app_1 = __webpack_require__(3);
+var spin_ele_1 = __webpack_require__(4);
 var point_1 = __webpack_require__(7);
-var div_ele_1 = __webpack_require__(3);
-var button_ele_1 = __webpack_require__(9);
+var div_ele_1 = __webpack_require__(1);
+var button_ele_1 = __webpack_require__(8);
 var Text = /** @class */ (function (_super) {
     __extends(Text, _super);
     function Text() {
@@ -142,6 +218,9 @@ var App = /** @class */ (function (_super) {
             //initVel -= 0.01;
             //initVel = RandomNumber.between(0.9, 1.1);
         }
+        setInterval(function () {
+            eles.forEach(function (e) { return e.tick(); });
+        }, 16);
         _this.addChild(new veil(eles));
         var velocity = new Text();
         var faster = new button_ele_1.ButtonEle("faster", function () { });
@@ -180,7 +259,7 @@ window.onload = function () {
 
 
 /***/ }),
-/* 1 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -214,7 +293,7 @@ exports.WebApp = WebApp;
 
 
 /***/ }),
-/* 2 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -230,7 +309,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var div_ele_1 = __webpack_require__(3);
+var div_ele_1 = __webpack_require__(1);
 var img_ele_1 = __webpack_require__(5);
 var SpinEle = /** @class */ (function (_super) {
     __extends(SpinEle, _super);
@@ -252,7 +331,6 @@ var SpinEle = /** @class */ (function (_super) {
         _this.style.height = "200px";
         _this.addChild(new img_ele_1.ImgEle(imgPath, function (i) { }));
         _this.angularVelocity = initialVelocity;
-        _this.timerHandle = setInterval(function () { return _this.tick(); }, _this.sleepIntervalMs);
         return _this;
     }
     Object.defineProperty(SpinEle.prototype, "friction", {
@@ -311,82 +389,6 @@ exports.SpinEle = SpinEle;
 
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(4);
-var DivEle = /** @class */ (function (_super) {
-    __extends(DivEle, _super);
-    function DivEle() {
-        var _this = _super.call(this) || this;
-        _this.target = document.createElement("div");
-        return _this;
-    }
-    return DivEle;
-}(ele_1.Ele));
-exports.DivEle = DivEle;
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Ele = /** @class */ (function () {
-    function Ele() {
-        this.children = [];
-    }
-    Object.defineProperty(Ele.prototype, "style", {
-        get: function () { return this.target.style; },
-        enumerable: true,
-        configurable: true
-    });
-    Ele.prototype.addChild = function (child) {
-        this.children.push(child);
-        this.target.appendChild(child.target);
-    };
-    // Add a child that isn't in the children list and won't get unloaded.
-    Ele.prototype.addUntrackedChild = function (child) {
-        this.target.appendChild(child.target);
-    };
-    Ele.prototype.addChildren = function (children) {
-        var _this = this;
-        children.forEach(function (child) { return _this.addChild(child); });
-    };
-    Ele.prototype.removeChild = function (child) {
-        this.target.removeChild(child.target);
-        this.children.splice(this.children.indexOf(child), 1);
-        child._unload();
-    };
-    Ele.prototype._unload = function () {
-        this.children.forEach(function (child) { return child.unload; });
-        this.children = [];
-        this.unload();
-    };
-    // Derived classes override this if you need to cancel any timers
-    Ele.prototype.unload = function () {
-    };
-    return Ele;
-}());
-exports.Ele = Ele;
-
-
-/***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -403,7 +405,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(4);
+var ele_1 = __webpack_require__(0);
 var model_1 = __webpack_require__(6);
 var ImgEle = /** @class */ (function (_super) {
     __extends(ImgEle, _super);
@@ -547,8 +549,7 @@ exports.PointAverager = PointAverager;
 
 
 /***/ }),
-/* 8 */,
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -564,7 +565,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var ele_1 = __webpack_require__(4);
+var ele_1 = __webpack_require__(0);
 var ButtonEle = /** @class */ (function (_super) {
     __extends(ButtonEle, _super);
     function ButtonEle(buttonText, _onClicked) {
